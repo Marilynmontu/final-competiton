@@ -26,6 +26,7 @@
 #include <stdarg.h>
 
 #include <AP_HAL/AP_HAL.h>
+#include <AP_HAL/AP_HAL_PX4.h>
 
 // Common dependencies
 #include <AP_Common/AP_Common.h>
@@ -195,6 +196,9 @@ private:
     DataFlash_Class DataFlash;
 
     AP_GPS gps;
+
+    //声明一个串口
+    PX4UARTDriver uart(UARTC_DEFAULT_DEVICE, "APM_uartC");
 
     // flight modes convenience array
     AP_Int8 *flight_modes;
@@ -647,6 +651,15 @@ private:
     static const AP_Scheduler::Task scheduler_tasks[];
     static const AP_Param::Info var_info[];
     static const struct LogStructure log_structure[];
+
+    static bool arm_ok;   //自定义解锁开关,默认构造为false，表示没有进行油门解锁
+    static bool uart_end; //自定义关闭串口的标志
+    static uint8_t uartdata;  //用于保存串口读取的数据
+   
+    //添加新的方法，先读取串口telem1的一字节数据，然后进行判断并自动控制飞行，10Hz调度
+    void read_uart(void);
+    void auto_control_fly(void);
+
 
     void compass_accumulate(void);
     void compass_cal_update(void);
